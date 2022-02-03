@@ -2,6 +2,18 @@ const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const auth = require('../../middleware/auth');
+const csv = require('csvtojson');
+
+const multer = require('multer');
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+var uploadFile = multer({ storage: storage });
 
 const Upload = require('../../models/Upload');
 const User = require('../../models/User');
@@ -11,10 +23,10 @@ const User = require('../../models/User');
 // @access  Private
 router.post(
   '/',
+  [uploadFile.single('file')],
   [auth],
-  [check('fileName', 'File name is required').not().isEmpty()],
+  [check('description', 'File name is required').not().isEmpty()],
   async (req, res) => {
-    console.log(req);
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -22,13 +34,27 @@ router.post(
       }
 
       const user = await User.findById(req.user.id).select('-password');
+      var arrayToInsert = [];
+
+      //convert csvfile to jsonArray
+      var leadUpload = await csv()
+        .fromFile(req.file.path)
+        .then((jsonObj) => {
+          return jsonObj;
+        });
+
+      console.log(leadUpload);
 
       const newUpload = new Upload({
-        fileName: req.body.fileName,
+        fileName: req.file.originalname,
         description: req.body.description,
         name: user.name,
         user: req.user.id,
         cost: req.body.cost,
+        purchaseDate: !req.body.purchaseDate
+          ? Date.now()
+          : req.body.purchaseDate,
+        leadUpload: leadUpload,
       });
 
       const post = await newUpload.save();

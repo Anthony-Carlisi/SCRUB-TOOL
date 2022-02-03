@@ -21,6 +21,11 @@ const UploadSchema = new mongoose.Schema({
   name: {
     type: String,
   },
+  purchaseDate: {
+    type: Date,
+    default: Date.now,
+  },
+  leadUpload: {},
   date: {
     type: Date,
     default: Date.now,
