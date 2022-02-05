@@ -19,6 +19,10 @@ app.get('/', (req, res) => res.send('API Running'));
 app.use('/api/user', require('./routes/api/user'));
 app.use('/api/auth', require('./routes/api/auth'));
 app.use('/api/upload', require('./routes/api/upload'));
+app.use('/api/leadProvider', require('./routes/api/leadProvider'));
+app.use('/api/leadList', require('./routes/api/leadList'));
+app.use('/api/lead', require('./routes/api/lead'));
+
 //app.use('/api/posts', require('./routes/api/posts'));
 
 // bind port to process.env file, if not present then port defaults to 5000

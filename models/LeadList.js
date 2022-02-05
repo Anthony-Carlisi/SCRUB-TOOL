@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const UploadSchema = new mongoose.Schema(
+const leadListSchema = new mongoose.Schema(
   {
-    fileName: {
+    listName: {
       type: String,
       required: true,
     },
@@ -12,21 +12,21 @@ const UploadSchema = new mongoose.Schema(
       required: true,
     },
     cost: {
-      type: Schema.Types.Decimal128,
+      type: Number,
       required: true,
     },
     user: {
       type: Schema.Types.ObjectId,
       ref: 'users',
     },
-    name: {
-      type: String,
+    leadProvider: {
+      type: Schema.Types.ObjectId,
+      ref: 'leadProvider',
     },
     purchaseDate: {
       type: Date,
       default: Date.now,
     },
-    leadUpload: {},
     date: {
       type: Date,
       default: Date.now,
@@ -35,4 +35,4 @@ const UploadSchema = new mongoose.Schema(
   { strict: false }
 );
 
-module.exports = mongoose.model('upload', UploadSchema);
+module.exports = mongoose.model('leadList', leadListSchema);

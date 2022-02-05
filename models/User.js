@@ -26,4 +26,4 @@ const UserSchema = new mongoose.Schema({
   },
 });
 // Exports the UserSchema model to a global variable called User
-module.exports = User = mongoose.model('user', UserSchema);
+module.exports = mongoose.model('user', UserSchema);

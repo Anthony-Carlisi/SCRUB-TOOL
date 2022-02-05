@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
-const auth = require('../../middleware/auth');
+const auth = require('../middleware/auth');
 const csv = require('csvtojson');
 
 const multer = require('multer');
@@ -15,8 +15,8 @@ var storage = multer.diskStorage({
 });
 var uploadFile = multer({ storage: storage });
 
-const Upload = require('../../models/Upload');
-const User = require('../../models/User');
+const Upload = require('../models/Upload');
+const User = require('../models/User');
 
 // @route   Post api/upload
 // @desc    Create an Upload
@@ -46,7 +46,6 @@ router.post(
           user: req.user.id,
           cost: req.body.cost,
           leadUpload: csvData[i],
-          test: 'test',
           purchaseDate: !req.body.purchaseDate
             ? Date.now()
             : req.body.purchaseDate,
