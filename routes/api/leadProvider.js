@@ -4,8 +4,8 @@ const auth = require('../../middleware/auth');
 
 const LeadProvider = require('../../models/LeadProvider');
 
-// @route   Post api/posts
-// @desc    Create a post
+// @route   Post api/leadProvider
+// @desc    Create a lead provider
 // @access  Private
 router.post('/', auth, async (req, res) => {
   try {
@@ -27,8 +27,8 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// @route   GET api/posts
-// @desc    Create all posts
+// @route   GET api/leadProvider
+// @desc    Get all lead providers
 // @access  Private
 router.get('/', auth, async (req, res) => {
   try {
@@ -40,8 +40,8 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// @route   GET api/posts/:id
-// @desc    Get post by ID
+// @route   GET api/leadProvider/:id
+// @desc    Get lead provider by ID
 // @access  Private
 router.get('/:id', auth, async (req, res) => {
   try {
@@ -61,8 +61,8 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-// @route   DELETE api/posts/:id
-// @desc    Delete a post
+// @route   DELETE api/leadProvider/:id
+// @desc    Delete a lead provider
 // @access  Private
 router.delete('/:id', auth, async (req, res) => {
   try {
