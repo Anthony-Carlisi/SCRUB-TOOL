@@ -10,17 +10,11 @@ const Lead = require('../../models/Lead');
 router.post('/', auth, async (req, res) => {
   try {
     const newLead = new Lead({
-      lead: [
-        {
-          leadList: req.body.leadList,
-          leadProvider: req.body.leadProvider,
-          purchaseDate: !req.body.purchaseDate
-            ? Date.now()
-            : req.body.purchaseDate,
-          user: req.user.id,
-          lead: req.body.lead,
-        },
-      ],
+      leadList: req.body.leadList,
+      leadProvider: req.body.leadProvider,
+      purchaseDate: !req.body.purchaseDate ? Date.now() : req.body.purchaseDate,
+      user: req.user.id,
+      leadInfo: req.body.leadInfo,
     });
 
     const lead = await newLead.save();

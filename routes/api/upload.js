@@ -37,6 +37,7 @@ router.post(
 
       //convert csvfile to jsonArray
       const csvData = await csv().fromFile(req.file.path);
+      console.log(Object.keys(csvData[0]));
 
       for (let i = 0; i < csvData.length; i++) {
         const newUpload = new Upload({
@@ -51,12 +52,12 @@ router.post(
             ? Date.now()
             : req.body.purchaseDate,
         });
-        newUpload.save();
+        //newUpload.save();
       }
 
       //      const uploaded = await
 
-      res.json('Completed');
+      res.json('Upload Started...');
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server Error');
