@@ -19,9 +19,12 @@ const leadListSchema = new mongoose.Schema(
       type: Schema.Types.ObjectId,
       ref: 'users',
     },
-    leadProvider: {
+    leadProviderId: {
       type: Schema.Types.ObjectId,
       ref: 'leadProvider',
+    },
+    leadProviderName: {
+      type: String,
     },
     purchaseDate: {
       type: Date,
