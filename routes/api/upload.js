@@ -15,54 +15,54 @@ var storage = multer.diskStorage({
 });
 var uploadFile = multer({ storage: storage });
 
-const Upload = require('../../models/Upload');
 const User = require('../../models/User');
+const Lead = require('../../models/Lead');
+const LeadList = require('../../models/LeadList');
+const LeadProvider = require('../../models/LeadProvider');
 
 // @route   Post api/upload
 // @desc    Create an Upload
 // @access  Private
-router.post(
-  '/',
-  [uploadFile.single('file')],
-  [auth],
-  [check('description', 'File name is required').not().isEmpty()],
-  async (req, res) => {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-      }
+router.post('/', [uploadFile.single('file')], [auth], async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    const leadProvider = await LeadProvider.findById(req.body.leadProvider);
+    const csvData = await csv().fromFile(req.file.path);
+    console.log(req.file);
 
-      const user = await User.findById(req.user.id).select('-password');
+    const newLeadList = new LeadList({
+      listName: req.file.originalname,
+      description: req.body.description,
+      cost: req.body.cost,
+      purchaseDate: !req.body.purchaseDate ? Date.now() : req.body.purchaseDate,
+      user: req.user.id,
+      leadProvider: leadProvider.id,
+    });
 
-      //convert csvfile to jsonArray
-      const csvData = await csv().fromFile(req.file.path);
-      console.log(Object.keys(csvData[0]));
+    const leadList = await newLeadList.save();
+    console.log(leadList);
 
-      for (let i = 0; i < csvData.length; i++) {
-        const newUpload = new Upload({
-          fileName: req.file.originalname,
-          description: req.body.description,
-          name: user.name,
-          user: req.user.id,
-          cost: req.body.cost,
-          leadUpload: csvData[i],
-          test: 'test',
-          purchaseDate: !req.body.purchaseDate
-            ? Date.now()
-            : req.body.purchaseDate,
-        });
-        //newUpload.save();
-      }
+    //convert csvfile to jsonArray
 
-      //      const uploaded = await
+    //    console.log(Object.keys(csvData[0]));
 
-      res.json('Upload Started...');
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server Error');
+    for (let i = 0; i < csvData.length; i++) {
+      const newLead = new Lead({
+        phone: req.body.phone,
+        dupBlock: req.body.dupBlock,
+        dupBlockRule: req.body.dupBlockRule,
+        user: req.user.id,
+        leadInfo: req.body.leadInfo,
+      });
+
+      newLead.save();
     }
+
+    res.json('Upload Started...');
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
-);
+});
 
 module.exports = router;

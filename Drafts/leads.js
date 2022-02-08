@@ -1,23 +1,11 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const leadListSchema = new mongoose.Schema(
+const leadSchema = new mongoose.Schema(
   {
-    listName: {
-      type: String,
-      required: true,
-    },
-    description: {
-      type: String,
-      required: true,
-    },
-    cost: {
-      type: Number,
-      required: true,
-    },
-    user: {
+    leadList: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'leadList',
     },
     leadProvider: {
       type: Schema.Types.ObjectId,
@@ -27,6 +15,11 @@ const leadListSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    leadInfo: {},
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'users',
+    },
     date: {
       type: Date,
       default: Date.now,
@@ -35,4 +28,4 @@ const leadListSchema = new mongoose.Schema(
   { strict: false }
 );
 
-module.exports = mongoose.model('leadList', leadListSchema);
+module.exports = mongoose.model('lead', leadSchema);

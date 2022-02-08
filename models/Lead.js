@@ -3,19 +3,41 @@ const Schema = mongoose.Schema;
 
 const leadSchema = new mongoose.Schema(
   {
-    leadList: {
-      type: Schema.Types.ObjectId,
-      ref: 'leadList',
+    phone: {
+      type: String,
     },
-    leadProvider: {
-      type: Schema.Types.ObjectId,
-      ref: 'leadProvider',
+    dupBlock: {
+      type: Boolean,
     },
-    purchaseDate: {
-      type: Date,
-      default: Date.now,
-    },
-    leadInfo: {},
+    dupBlockRule: [
+      {
+        dupBlockRuleId: {
+          //type: Schema.Types.ObjectId,
+          //ref: 'dupBlockRule',
+          type: String,
+        },
+        date: {
+          type: Date,
+        },
+      },
+    ],
+    leadInfo: [
+      {
+        leadList: {
+          type: Schema.Types.ObjectId,
+          ref: 'leadList',
+        },
+        leadProvider: {
+          type: Schema.Types.ObjectId,
+          ref: 'leadProvider',
+        },
+        purchaseDate: {
+          type: Date,
+          default: Date.now,
+        },
+        lead: {},
+      },
+    ],
     user: {
       type: Schema.Types.ObjectId,
       ref: 'users',

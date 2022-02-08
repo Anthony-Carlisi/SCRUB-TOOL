@@ -10,9 +10,9 @@ const Lead = require('../../models/Lead');
 router.post('/', auth, async (req, res) => {
   try {
     const newLead = new Lead({
-      leadList: req.body.leadList,
-      leadProvider: req.body.leadProvider,
-      purchaseDate: !req.body.purchaseDate ? Date.now() : req.body.purchaseDate,
+      phone: req.body.phone,
+      dupBlock: req.body.dupBlock,
+      dupBlockRule: req.body.dupBlockRule,
       user: req.user.id,
       leadInfo: req.body.leadInfo,
     });

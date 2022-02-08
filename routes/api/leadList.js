@@ -10,19 +10,7 @@ const LeadProvider = require('../../models/LeadProvider');
 // @access  Private
 router.post('/', auth, async (req, res) => {
   try {
-    const { leadProviderId, leadProviderName } = req.body;
-    let leadProvider;
-    if (leadProviderId) {
-      leadProvider = await LeadProvider.findOne({ _id: leadProviderId });
-    } else {
-      leadProvider = await LeadProvider.findOne({
-        companyName: leadProviderName,
-      });
-    }
-
-    if (!leadProvider) {
-      return res.status(400).json({ msg: 'No lead provider selected' });
-    }
+    const leadProvider = await LeadProvider.findById(req.body.leadProvider);
 
     const newLeadList = new LeadList({
       listName: req.body.listName,
@@ -30,8 +18,7 @@ router.post('/', auth, async (req, res) => {
       cost: req.body.cost,
       purchaseDate: !req.body.purchaseDate ? Date.now() : req.body.purchaseDate,
       user: req.user.id,
-      leadProviderId: leadProvider.id,
-      leadProviderName: req.body.leadProviderName,
+      leadProvider: leadProvider.id,
     });
 
     const leadList = await newLeadList.save();
