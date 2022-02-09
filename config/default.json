@@ -1,4 +1,6 @@
 {
   "mongoURI": "mongodb+srv://root:vIteCGKGQZlzYMzb@cluster0.geegl.mongodb.net/Scrub-Tool?retryWrites=true&w=majority",
-  "jwtSecret": "P@$$w0rd321@AC"
+  "jwtSecret": "P@$$w0rd321@AC",
+  "airtableApiKey": "keyZ0WMDk0n8pJ7yl",
+  "airtableBase": "appumwVbyIXggVLmr"
 }

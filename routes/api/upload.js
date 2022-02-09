@@ -13,9 +13,8 @@ var storage = multer.diskStorage({
     cb(null, file.originalname);
   },
 });
-var uploadFile = multer({ storage: storage });
+const uploadFile = multer({ storage: storage });
 
-const User = require('../../models/User');
 const Lead = require('../../models/Lead');
 const LeadList = require('../../models/LeadList');
 const LeadProvider = require('../../models/LeadProvider');
@@ -25,10 +24,32 @@ const LeadProvider = require('../../models/LeadProvider');
 // @access  Private
 router.post('/', [uploadFile.single('file')], [auth], async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
     const leadProvider = await LeadProvider.findById(req.body.leadProvider);
-    const csvData = await csv().fromFile(req.file.path);
-    console.log(req.file);
+    let match;
+
+    const csvData = await csv()
+      .fromFile(req.file.path)
+      .on('header', (headers) => {
+        match = headers.find((element) => {
+          if (element.includes('phone')) {
+            return true;
+          }
+        });
+      });
+    if (match === undefined)
+      return res.status(503).json({ msg: 'Phone Number Field not found' });
+
+    // awaits to find if user exists from searching with email
+    let leadListFound = await LeadList.findOne({
+      listName: req.file.originalname,
+    });
+    // See if user exists
+    if (leadListFound) {
+      // if user does exist it will send a response back with user already exists
+      return res
+        .status(400)
+        .json({ errors: [{ msg: 'Lead List already uploaded' }] });
+    }
 
     const newLeadList = new LeadList({
       listName: req.file.originalname,
@@ -40,22 +61,32 @@ router.post('/', [uploadFile.single('file')], [auth], async (req, res) => {
     });
 
     const leadList = await newLeadList.save();
-    console.log(leadList);
 
     //convert csvfile to jsonArray
-
-    //    console.log(Object.keys(csvData[0]));
-
     for (let i = 0; i < csvData.length; i++) {
-      const newLead = new Lead({
-        phone: req.body.phone,
-        dupBlock: req.body.dupBlock,
-        dupBlockRule: req.body.dupBlockRule,
-        user: req.user.id,
-        leadInfo: req.body.leadInfo,
-      });
-
-      newLead.save();
+      let lead = await Lead.findOne({ phone: csvData[i][match] });
+      // See if lead exists
+      if (lead) {
+        lead.leadInfo.unshift({
+          leadList: leadList.id,
+          leadProvider: req.body.leadProvider,
+          lead: csvData[i],
+        });
+      } else {
+        lead = new Lead({
+          phone: csvData[i][match],
+          dupBlockRule: req.body.dupBlockRule,
+          user: req.user.id,
+          leadInfo: [
+            {
+              leadList: leadList.id,
+              leadProvider: req.body.leadProvider,
+              lead: csvData[i],
+            },
+          ],
+        });
+      }
+      lead.save();
     }
 
     res.json('Upload Started...');

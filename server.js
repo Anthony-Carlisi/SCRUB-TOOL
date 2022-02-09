@@ -22,6 +22,7 @@ app.use('/api/upload', require('./routes/api/upload'));
 app.use('/api/leadProvider', require('./routes/api/leadProvider'));
 app.use('/api/leadList', require('./routes/api/leadList'));
 app.use('/api/lead', require('./routes/api/lead'));
+app.use('/api/export', require('./routes/api/export'));
 
 //app.use('/api/posts', require('./routes/api/posts'));
 

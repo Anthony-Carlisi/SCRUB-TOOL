@@ -5,9 +5,11 @@ const leadSchema = new mongoose.Schema(
   {
     phone: {
       type: String,
+      unique: true,
     },
     dupBlock: {
       type: Boolean,
+      default: false,
     },
     dupBlockRule: [
       {
@@ -30,10 +32,6 @@ const leadSchema = new mongoose.Schema(
         leadProvider: {
           type: Schema.Types.ObjectId,
           ref: 'leadProvider',
-        },
-        purchaseDate: {
-          type: Date,
-          default: Date.now,
         },
         lead: {},
       },
