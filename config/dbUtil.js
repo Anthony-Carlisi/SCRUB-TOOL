@@ -41,7 +41,7 @@ function inputStudents(startCount, endCount) {
       console.log('Bulk Data :', bulkData.length);
       collection.bulkWrite(bulkData, function (err, res) {
         if (err) throw err;
-        //console.log("Connected Successfully",res);
+        console.log('Connected Successfully', res);
         process.send('Saved Successfully');
         db.close();
       });

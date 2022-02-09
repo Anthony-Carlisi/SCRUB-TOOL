@@ -45,11 +45,13 @@ router.post('/', [uploadFile.single('file')], [auth], async (req, res) => {
       listName: req.file.originalname,
     });
 
+    /*
     if (leadListFound) {
       return res
         .status(400)
         .json({ errors: [{ msg: 'Lead List already uploaded' }] });
     }
+*/
 
     const newLeadList = new LeadList({
       listName: req.file.originalname,
@@ -62,6 +64,7 @@ router.post('/', [uploadFile.single('file')], [auth], async (req, res) => {
 
     const leadList = await newLeadList.save();
 
+    //    let arrTest = [];
     //convert csvfile to jsonArray
     for (let i = 0; i < csvData.length; i++) {
       let lead = await Lead.findOne({ phone: csvData[i][match] });
@@ -85,9 +88,12 @@ router.post('/', [uploadFile.single('file')], [auth], async (req, res) => {
             },
           ],
         });
+        //        console.log(lead);
+        //        arrTest.push(lead);
       }
       //      lead.save();
     }
+    //    console.log(arrTest);
 
     res.json('Upload Started...');
   } catch (err) {
