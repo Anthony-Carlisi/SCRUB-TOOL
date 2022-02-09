@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
-const auth = require('../middleware/auth');
+const auth = require('../../middleware/auth');
 const csv = require('csvtojson');
 
 const multer = require('multer');
@@ -13,54 +13,109 @@ var storage = multer.diskStorage({
     cb(null, file.originalname);
   },
 });
-var uploadFile = multer({ storage: storage });
+const uploadFile = multer({ storage: storage });
 
-const Upload = require('../models/Upload');
-const User = require('../models/User');
+const Lead = require('../../models/Lead');
+const LeadList = require('../../models/LeadList');
+const LeadProvider = require('../../models/LeadProvider');
+
+const { MongoClient } = require('mongodb');
 
 // @route   Post api/upload
 // @desc    Create an Upload
 // @access  Private
-router.post(
-  '/',
-  [uploadFile.single('file')],
-  [auth],
-  [check('description', 'File name is required').not().isEmpty()],
-  async (req, res) => {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-      }
+router.post('/', [uploadFile.single('file')], [auth], async (req, res) => {
+  try {
+    const leadProvider = await LeadProvider.findById(req.body.leadProvider);
+    let match;
 
-      const user = await User.findById(req.user.id).select('-password');
-
-      //convert csvfile to jsonArray
-      const csvData = await csv().fromFile(req.file.path);
-
-      for (let i = 0; i < csvData.length; i++) {
-        const newUpload = new Upload({
-          fileName: req.file.originalname,
-          description: req.body.description,
-          name: user.name,
-          user: req.user.id,
-          cost: req.body.cost,
-          leadUpload: csvData[i],
-          purchaseDate: !req.body.purchaseDate
-            ? Date.now()
-            : req.body.purchaseDate,
+    const csvData = await csv()
+      .fromFile(req.file.path)
+      .on('header', (headers) => {
+        match = headers.find((element) => {
+          if (element.includes('phone')) {
+            return true;
+          }
         });
-        newUpload.save();
-      }
+      });
+    if (match === undefined)
+      return res.status(503).json({ msg: 'Phone Number Field not found' });
 
-      //      const uploaded = await
+    let leadListFound = await LeadList.findOne({
+      listName: req.file.originalname,
+    });
 
-      res.json('Completed');
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server Error');
+    if (leadListFound) {
+      return res
+        .status(400)
+        .json({ errors: [{ msg: 'Lead List already uploaded' }] });
     }
+
+    const newLeadList = new LeadList({
+      listName: req.file.originalname,
+      description: req.body.description,
+      cost: req.body.cost,
+      purchaseDate: !req.body.purchaseDate ? Date.now() : req.body.purchaseDate,
+      user: req.user.id,
+      leadProvider: leadProvider.id,
+    });
+
+    const leadList = await newLeadList.save();
+
+    //convert csvfile to jsonArray
+    for (let i = 0; i < csvData.length; i++) {
+      let lead = await Lead.findOneAndUpdate(
+        { phone: csvData[i][match] },
+        {
+          leadInfo: [
+            {
+              leadList: leadList.id,
+              leadProvider: req.body.leadProvider,
+              lead: csvData[i],
+            },
+          ],
+        },
+        {
+          new: true,
+        }
+      );
+      console.log(lead);
+    }
+
+    /*
+
+
+      // See if lead exists
+      if (lead) {
+        lead.leadInfo.unshift({
+          leadList: leadList.id,
+          leadProvider: req.body.leadProvider,
+          lead: csvData[i],
+        });
+      } else {
+        lead = new Lead({
+          phone: csvData[i][match],
+          dupBlockRule: req.body.dupBlockRule,
+          user: req.user.id,
+          leadInfo: [
+            {
+              leadList: leadList.id,
+              leadProvider: req.body.leadProvider,
+              lead: csvData[i],
+            },
+          ],
+        });
+      }
+      lead.save();
+    }
+
+    */
+
+    res.json('Upload Started...');
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
-);
+});
 
 module.exports = router;

@@ -19,6 +19,8 @@ const Lead = require('../../models/Lead');
 const LeadList = require('../../models/LeadList');
 const LeadProvider = require('../../models/LeadProvider');
 
+const { MongoClient } = require('mongodb');
+
 // @route   Post api/upload
 // @desc    Create an Upload
 // @access  Private
@@ -39,13 +41,11 @@ router.post('/', [uploadFile.single('file')], [auth], async (req, res) => {
     if (match === undefined)
       return res.status(503).json({ msg: 'Phone Number Field not found' });
 
-    // awaits to find if user exists from searching with email
     let leadListFound = await LeadList.findOne({
       listName: req.file.originalname,
     });
-    // See if user exists
+
     if (leadListFound) {
-      // if user does exist it will send a response back with user already exists
       return res
         .status(400)
         .json({ errors: [{ msg: 'Lead List already uploaded' }] });
@@ -86,7 +86,7 @@ router.post('/', [uploadFile.single('file')], [auth], async (req, res) => {
           ],
         });
       }
-      lead.save();
+      //      lead.save();
     }
 
     res.json('Upload Started...');
