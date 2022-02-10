@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const { check, validationResult } = require('express-validator');
 const auth = require('../../middleware/auth');
 const csv = require('csvtojson');
 
@@ -18,8 +17,6 @@ const uploadFile = multer({ storage: storage });
 const Lead = require('../../models/Lead');
 const LeadList = require('../../models/LeadList');
 const LeadProvider = require('../../models/LeadProvider');
-
-const { MongoClient } = require('mongodb');
 
 // @route   Post api/upload
 // @desc    Create an Upload
@@ -64,6 +61,9 @@ router.post('/', [uploadFile.single('file')], [auth], async (req, res) => {
 
     const leadList = await newLeadList.save();
 
+    console.log(csvData);
+
+    /*
     //    let arrTest = [];
     //convert csvfile to jsonArray
     for (let i = 0; i < csvData.length; i++) {
@@ -94,6 +94,8 @@ router.post('/', [uploadFile.single('file')], [auth], async (req, res) => {
       //      lead.save();
     }
     //    console.log(arrTest);
+
+*/
 
     res.json('Upload Started...');
   } catch (err) {
