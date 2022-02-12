@@ -31,8 +31,6 @@ router.post('/', [auth], async (req, res) => {
     //let leadArr = [];
     let headerFields = Object.keys(leads[0].lead);
 
-    //for (let i = 0; i < leads.length; i++) leadArr.push(leads[i].lead);
-
     const airtableSearch = async () => {
       try {
         const records = await base('Merchant Records')
@@ -61,6 +59,9 @@ router.post('/', [auth], async (req, res) => {
       }
     }
     console.log(arr);
+    let comp = [];
+    for (let i = 0; i < arr.length; i++) arr.push(comp[i].lead);
+
     /*
     function storelead(data) {
       // This creates an array of Promise objects, which can be
@@ -81,7 +82,7 @@ router.post('/', [auth], async (req, res) => {
     const leadArr = await storelead(leads);
 
     */
-    const csv = json2csv(arr, headerFields);
+    const csv = json2csv(comp, headerFields);
 
     fs.writeFile(`${leadList.listName} Export.csv`, csv, function (err) {
       if (err) throw err;
