@@ -25,23 +25,13 @@ router.post('/', [auth], async (req, res) => {
     const leadList = await LeadList.findById(req.body.leadList);
 
     const leads = await Lead.find({
-      'leadInfo.leadList': ObjectId(req.body.leadList),
+      leadList: ObjectId(req.body.leadList),
     });
 
     let leadArr = [];
-    let headerFields = [];
+    let headerFields = Object.keys(leads[0].lead);
 
-    for (let i = 0; i < leads.length; i++) {
-      for (let j = 0; j < leads[i].leadInfo.length; j++) {
-        if (
-          leads[i].leadInfo[j].leadList._id.toHexString() === req.body.leadList
-        ) {
-          leadArr.push(leads[i].leadInfo[j].lead);
-          let header = Object.keys(leads[i].leadInfo[j].lead);
-          headerFields = [...header];
-        }
-      }
-    }
+    for (let i = 0; i < leads.length; i++) leadArr.push(leads[i].lead);
 
     const csv = json2csv(leadArr, headerFields);
 
@@ -49,6 +39,8 @@ router.post('/', [auth], async (req, res) => {
       if (err) throw err;
       console.log('file saved');
     });
+
+    /*
 
     const airtableSearch5 = async () => {
       try {
@@ -69,6 +61,7 @@ router.post('/', [auth], async (req, res) => {
       })
     );
 
+*/
     res.json('Export Started...');
   } catch (err) {
     console.error(err.message);

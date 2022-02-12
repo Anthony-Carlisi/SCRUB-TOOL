@@ -2,11 +2,13 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../middleware/auth');
 const csv = require('csvtojson');
+const fs = require('fs');
 
 const multer = require('multer');
+
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/');
+    cb(null, 'temp/');
   },
   filename: function (req, file, cb) {
     cb(null, file.originalname);
@@ -25,8 +27,8 @@ router.post('/', [uploadFile.single('file')], [auth], async (req, res) => {
   try {
     const leadProvider = await LeadProvider.findById(req.body.leadProvider);
     let match;
-
-    const csvData = await csv()
+    console.log(req.file);
+    let csvData = await csv()
       .fromFile(req.file.path)
       .on('header', (headers) => {
         match = headers.find((element) => {
@@ -41,7 +43,6 @@ router.post('/', [uploadFile.single('file')], [auth], async (req, res) => {
     let leadListFound = await LeadList.findOne({
       listName: req.file.originalname,
     });
-
     /*
     if (leadListFound) {
       return res
@@ -49,7 +50,6 @@ router.post('/', [uploadFile.single('file')], [auth], async (req, res) => {
         .json({ errors: [{ msg: 'Lead List already uploaded' }] });
     }
 */
-
     const newLeadList = new LeadList({
       listName: req.file.originalname,
       description: req.body.description,
@@ -61,43 +61,29 @@ router.post('/', [uploadFile.single('file')], [auth], async (req, res) => {
 
     const leadList = await newLeadList.save();
 
-    console.log(csvData);
-
-    /*
-    //    let arrTest = [];
-    //convert csvfile to jsonArray
     for (let i = 0; i < csvData.length; i++) {
-      let lead = await Lead.findOne({ phone: csvData[i][match] });
-      // See if lead exists
-      if (lead) {
-        lead.leadInfo.unshift({
-          leadList: leadList.id,
-          leadProvider: req.body.leadProvider,
-          lead: csvData[i],
-        });
-      } else {
-        lead = new Lead({
-          phone: csvData[i][match],
-          dupBlockRule: req.body.dupBlockRule,
-          user: req.user.id,
-          leadInfo: [
-            {
-              leadList: leadList.id,
-              leadProvider: req.body.leadProvider,
-              lead: csvData[i],
-            },
-          ],
-        });
-        //        console.log(lead);
-        //        arrTest.push(lead);
-      }
-      //      lead.save();
+      csvData[i] = new Lead({
+        phone: csvData[i][match],
+        dupBlockRule: req.body.dupBlockRule,
+        user: req.user.id,
+        leadList: leadList.id,
+        leadProvider: req.body.leadProvider,
+        lead: csvData[i],
+      });
     }
-    //    console.log(arrTest);
 
-*/
+    Lead.insertMany(csvData, function (err) {
+      if (err) throw err;
+    });
 
-    res.json('Upload Started...');
+    fs.unlink(req.file.path, (err) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+    });
+
+    res.json(`Upload Started...`);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

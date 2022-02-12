@@ -5,12 +5,28 @@ const leadSchema = new mongoose.Schema(
   {
     phone: {
       type: String,
-      unique: true,
     },
     dupBlock: {
       type: Boolean,
       default: false,
     },
+    leadList: {
+      type: Schema.Types.ObjectId,
+      ref: 'leadList',
+    },
+    leadProvider: {
+      type: Schema.Types.ObjectId,
+      ref: 'leadProvider',
+    },
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'users',
+    },
+    date: {
+      type: Date,
+      default: Date.now,
+    },
+    lead: {},
     dupBlockRule: [
       {
         dupBlockRuleId: {
@@ -20,30 +36,10 @@ const leadSchema = new mongoose.Schema(
         },
         date: {
           type: Date,
+          default: Date.now,
         },
       },
     ],
-    leadInfo: [
-      {
-        leadList: {
-          type: Schema.Types.ObjectId,
-          ref: 'leadList',
-        },
-        leadProvider: {
-          type: Schema.Types.ObjectId,
-          ref: 'leadProvider',
-        },
-        lead: {},
-      },
-    ],
-    user: {
-      type: Schema.Types.ObjectId,
-      ref: 'users',
-    },
-    date: {
-      type: Date,
-      default: Date.now,
-    },
   },
   { strict: false }
 );
