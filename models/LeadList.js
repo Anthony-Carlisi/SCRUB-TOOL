@@ -15,6 +15,10 @@ const leadListSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    leadCount: {
+      type: Number,
+      required: true,
+    },
     user: {
       type: Schema.Types.ObjectId,
       ref: 'users',

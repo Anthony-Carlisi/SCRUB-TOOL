@@ -6,10 +6,6 @@ const leadSchema = new mongoose.Schema(
     phone: {
       type: String,
     },
-    dupBlock: {
-      type: Boolean,
-      default: false,
-    },
     leadList: {
       type: Schema.Types.ObjectId,
       ref: 'leadList',

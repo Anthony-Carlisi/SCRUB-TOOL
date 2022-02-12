@@ -26,8 +26,8 @@ const LeadProvider = require('../../models/LeadProvider');
 router.post('/', [uploadFile.single('file')], [auth], async (req, res) => {
   try {
     const leadProvider = await LeadProvider.findById(req.body.leadProvider);
+
     let match;
-    console.log(req.file);
     let csvData = await csv()
       .fromFile(req.file.path)
       .on('header', (headers) => {
@@ -41,7 +41,7 @@ router.post('/', [uploadFile.single('file')], [auth], async (req, res) => {
       return res.status(503).json({ msg: 'Phone Number Field not found' });
 
     let leadListFound = await LeadList.findOne({
-      listName: req.file.originalname,
+      listName: req.file.originalname.split('.')[0],
     });
     /*
     if (leadListFound) {
@@ -51,12 +51,13 @@ router.post('/', [uploadFile.single('file')], [auth], async (req, res) => {
     }
 */
     const newLeadList = new LeadList({
-      listName: req.file.originalname,
+      listName: req.file.originalname.split('.')[0],
       description: req.body.description,
       cost: req.body.cost,
       purchaseDate: !req.body.purchaseDate ? Date.now() : req.body.purchaseDate,
       user: req.user.id,
       leadProvider: leadProvider.id,
+      leadCount: csvData.length,
     });
 
     const leadList = await newLeadList.save();

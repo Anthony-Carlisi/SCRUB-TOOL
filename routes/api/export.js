@@ -28,21 +28,12 @@ router.post('/', [auth], async (req, res) => {
       leadList: ObjectId(req.body.leadList),
     });
 
-    let leadArr = [];
+    //let leadArr = [];
     let headerFields = Object.keys(leads[0].lead);
 
-    for (let i = 0; i < leads.length; i++) leadArr.push(leads[i].lead);
+    //for (let i = 0; i < leads.length; i++) leadArr.push(leads[i].lead);
 
-    const csv = json2csv(leadArr, headerFields);
-
-    fs.writeFile(`${leadList.listName} Export.csv`, csv, function (err) {
-      if (err) throw err;
-      console.log('file saved');
-    });
-
-    /*
-
-    const airtableSearch5 = async () => {
+    const airtableSearch = async () => {
       try {
         const records = await base('Merchant Records')
           .select({
@@ -55,13 +46,48 @@ router.post('/', [auth], async (req, res) => {
       }
     };
 
-    console.log(
-      airtableSearch5().then((res) => {
-        console.log(res);
-      })
-    );
+    let dupParams = await airtableSearch();
 
-*/
+    let arr = leads;
+    for (let i = 0; i < leads.length; i++) {
+      for (let j = 0; j < dupParams.length; j++) {
+        if (
+          dupParams[j].fields['Business Phone'] === leads[i].phone ||
+          dupParams[j].fields['Owner 1 Mobile'] === leads[i].phone
+        ) {
+          console.log(leads[i]);
+          arr.splice(leads[i], 1);
+        }
+      }
+    }
+    console.log(arr);
+    /*
+    function storelead(data) {
+      // This creates an array of Promise objects, which can be
+      // executed in parallel.
+      const promises = data.map((leadCheck) => {
+        for (let i = 0; i < dupParams.length; i++) {
+          if (
+            !dupParams[i].fields['Business Phone'] === leadCheck.phone ||
+            !dupParams[i].fields['Owner 1 Mobile'] === leadCheck.phone
+          ) {
+            return leadCheck.lead;
+          }
+        }
+      });
+      return Promise.all(promises);
+    }
+
+    const leadArr = await storelead(leads);
+
+    */
+    const csv = json2csv(arr, headerFields);
+
+    fs.writeFile(`${leadList.listName} Export.csv`, csv, function (err) {
+      if (err) throw err;
+      console.log('file saved');
+    });
+
     res.json('Export Started...');
   } catch (err) {
     console.error(err.message);
