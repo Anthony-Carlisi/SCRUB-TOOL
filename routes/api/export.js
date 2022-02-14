@@ -10,32 +10,33 @@ const fs = require('fs');
 
 const Lead = require('../../models/Lead');
 const LeadList = require('../../models/LeadList');
-const LeadProvider = require('../../models/LeadProvider');
+const DupBlockRule = require('../../models/DupBlockRule');
 
 const apiKey = config.get('airtableApiKey');
 const baseId = config.get('airtableBase');
 
 const base = new Airtable({ apiKey: apiKey }).base(baseId);
 
-// @route   Post api/upload
-// @desc    Create an Upload
+// @route   Post api/export
+// @desc    Create an Export
 // @access  Private
 router.post('/', [auth], async (req, res) => {
   try {
     const leadList = await LeadList.findById(req.body.leadList);
 
+    const dupBlockRule = await DupBlockRule.findById(req.body.dupBlockRule);
+
     const leads = await Lead.find({
       leadList: ObjectId(req.body.leadList),
     });
 
-    //let leadArr = [];
     let headerFields = Object.keys(leads[0].lead);
 
     const airtableSearch = async () => {
       try {
         const records = await base('Merchant Records')
           .select({
-            filterByFormula: `DATETIME_DIFF({Status Change Date (DUPS)}, DATEADD(TODAY(),-90,'days'), 'days') > 0`,
+            filterByFormula: dupBlockRule.filterByFormula,
           })
           .all();
         return records;
@@ -47,20 +48,24 @@ router.post('/', [auth], async (req, res) => {
     let dupParams = await airtableSearch();
 
     let arr = leads;
+    let dupBlockLeads = [];
     for (let i = 0; i < leads.length; i++) {
       for (let j = 0; j < dupParams.length; j++) {
         if (
           dupParams[j].fields['Business Phone'] === leads[i].phone ||
           dupParams[j].fields['Owner 1 Mobile'] === leads[i].phone
         ) {
-          console.log(leads[i]);
           arr.splice(leads[i], 1);
+          //leads[i].lead.push({ 'Dup Blocked MID': dupParams[j].fields.MID });
+          let obj = leads[i].lead;
+          obj['Dup Blocked MID'] = dupParams[j].fields.MID;
+          dupBlockLeads.push(obj);
         }
       }
     }
-    console.log(arr);
+    console.log(dupBlockLeads.length);
     let comp = [];
-    for (let i = 0; i < arr.length; i++) arr.push(comp[i].lead);
+    for (let i = 0; i < arr.length; i++) comp.push(arr[i].lead);
 
     /*
     function storelead(data) {
@@ -82,12 +87,32 @@ router.post('/', [auth], async (req, res) => {
     const leadArr = await storelead(leads);
 
     */
-    const csv = json2csv(comp, headerFields);
 
-    fs.writeFile(`${leadList.listName} Export.csv`, csv, function (err) {
-      if (err) throw err;
-      console.log('file saved');
-    });
+    if (comp) {
+      const csv = json2csv(comp, headerFields);
+
+      fs.writeFile(
+        `./exports/${leadList.listName} Export.csv`,
+        csv,
+        function (err) {
+          if (err) throw err;
+          console.log('file saved');
+        }
+      );
+    }
+
+    if (dupBlockLeads) {
+      headerFields.push('Dup Blocked MID');
+      const csv2 = json2csv(dupBlockLeads, headerFields);
+      fs.writeFile(
+        `./exports/${leadList.listName} DupBlock Export.csv`,
+        csv2,
+        function (err) {
+          if (err) throw err;
+          console.log('file saved');
+        }
+      );
+    }
 
     res.json('Export Started...');
   } catch (err) {
