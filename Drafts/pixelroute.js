@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../../middleware/auth');
+const auth = require('../middleware/auth');
 
-const Pixel = require('../../models/Pixel');
+const Pixel = require('./Pixel');
 
 // @route   Post api/pixel
 // @desc    Create a pixel

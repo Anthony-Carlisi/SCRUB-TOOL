@@ -23,7 +23,7 @@ app.use('/api/leadList', require('./routes/api/leadList'));
 app.use('/api/lead', require('./routes/api/lead'));
 app.use('/api/export', require('./routes/api/export'));
 app.use('/api/dupBlockRule', require('./routes/api/dupBlockRule'));
-app.use('/api/pixel', require('./routes/api/pixel'));
+//app.use('/api/pixel', require('./Drafts/pixelroute'));
 
 // bind port to process.env file, if not present then port defaults to 5000
 const PORT = process.env.PORT || 5000;
